@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Cpu, Users, Clock, Check as ChessKing, UserPlus } from 'lucide-react';
+import { Cpu, Users, Clock, UserPlus } from 'lucide-react';
 import { Card, CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { ArrowRight } from 'lucide-react';
 
 const Play = () => {
   // Game modes
@@ -89,8 +90,8 @@ const Play = () => {
                   <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
                     {mode.description}
                   </p>
-                  <Button fullWidth rightIcon={<ChessKing className="w-4 h-4" />}>
-                    Play {mode.title}
+                  <Button fullWidth rightIcon={<ArrowRight className='w-4 h-4'/>}>
+                    {mode.title}
                   </Button>
                 </CardBody>
               </Card>
