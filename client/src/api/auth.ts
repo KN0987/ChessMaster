@@ -1,6 +1,6 @@
 import { BACKEND_URL } from "../config/config";
 
-export const register = async (email: String, password: String) => {
+export const register = async (email: string, password: string) => {
 
     const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: 'POST',
@@ -18,7 +18,7 @@ export const register = async (email: String, password: String) => {
     return await response.json();
 }
 
-export const login = async (email: String, password: String) => {
+export const login = async (email: string, password: string) => {
     const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
