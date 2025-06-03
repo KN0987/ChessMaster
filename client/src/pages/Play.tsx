@@ -73,7 +73,7 @@ const Play = () => {
         </h1>
 
         {/* Game Modes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {gameModes.map((mode) => (
             <Link key={mode.id} to={mode.path} className="block">
               <Card className="h-full transform transition-all hover:scale-105 hover:shadow-lg overflow-hidden">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Check as ChessKing, Menu, X, User } from 'lucide-react';
+import {Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 
 
@@ -45,7 +45,7 @@ const Navbar = () => {
             
             
             <Link 
-              to="/profile"
+              to="/signin"
               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900"
             >
               <User className="w-4 h-4" />
@@ -85,7 +85,7 @@ const Navbar = () => {
             ))}
             
             <Link
-              to="/profile"
+              to="/signin"
               className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900"
               onClick={() => setIsMenuOpen(false)}
             >

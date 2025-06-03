@@ -10,6 +10,8 @@ const SinglePlayer = lazy(() => import("./pages/SinglePlayer"));
 const MultiPlayer = lazy(() => import("./pages/MultiPlayer"));
 const LocalMultiPlayer = lazy(() => import("./pages/LocalMultiPlayer"));
 const GameRoom = lazy(() => import("./pages/GameRoom"));
+const Signin = lazy(() => import("./pages/Signin"));
+const Signup = lazy(() => import("./pages/Signup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Play />} />
+            <Route path="/signin" element={<Signin />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/play/single" element={<SinglePlayer />} />
             <Route path="/play/multi" element={<MultiPlayer />} />
