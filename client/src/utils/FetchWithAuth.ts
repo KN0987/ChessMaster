@@ -28,6 +28,6 @@ export default async function fetchWithAuth(url: string, options: FetchWithAuthO
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    return response.json();
+    return response;
     
 }

@@ -1,22 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { BarChart3, Check as ChessKing, User, Settings, Calendar, Clock, Trophy } from "lucide-react";
+import {getUserData} from "../api/user";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("games");
-  
-  // Mock user data
-  const user = {
-    username: "ChessMaster2000",
-    rating: 1850,
-    joined: "March 2023",
-    gamesPlayed: 156,
-    wins: 87,
-    losses: 45,
-    draws: 24,
-    winRate: "55.8%",
-  };
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState({
+    name: "Default User",
+    elo: 0,
+    created_at: "???",
+    total_games: 0,
+    num_wins: 0,
+    num_losses: 0,
+    num_draws: 0,
+    email: "???@example.com",
+  });
+
+  console.log("userData", userData);
   
   // Mock recent games
   const recentGames = [
@@ -65,6 +67,27 @@ const Profile = () => {
     { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
   ];
   
+  useEffect(() => {
+    // Check if user is logged in
+    const sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+      setIsLoggedIn(false);
+
+    }else{
+      // Fetch user data from the API
+      getUserData()
+        .then((data) => {
+          setUserData(data);
+          setIsLoggedIn(true);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+          setIsLoggedIn(false);
+        });
+    }
+
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-5xl mx-auto">
@@ -78,35 +101,35 @@ const Profile = () => {
             
             {/* User Info */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="font-serif text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {user.username}
+              <h1 className="font-sans text-2xl font-medium text-gray-900 dark:text-white mb-2">
+                {userData.name}
               </h1>
               <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                 <div className="flex items-center gap-1">
                   <Trophy className="w-4 h-4" />
-                  <span>{user.rating} ELO</span>
+                  <span>{userData.elo} ELO</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  <span>Joined {user.joined}</span>
+                  <span>Joined {userData.created_at}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <ChessKing className="w-4 h-4" />
-                  <span>{user.gamesPlayed} games played</span>
+                  <span>{userData.total_games} games played</span>
                 </div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 max-w-md mx-auto md:mx-0">
                 <div className="bg-green-50 dark:bg-green-900/30 p-2 rounded text-center">
-                  <div className="text-green-600 dark:text-green-400 font-bold text-xl">{user.wins}</div>
+                  <div className="text-green-600 dark:text-green-400 font-bold text-xl">{userData.num_wins}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Wins</div>
                 </div>
                 <div className="bg-red-50 dark:bg-red-900/30 p-2 rounded text-center">
-                  <div className="text-red-600 dark:text-red-400 font-bold text-xl">{user.losses}</div>
+                  <div className="text-red-600 dark:text-red-400 font-bold text-xl">{userData.num_losses}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Losses</div>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/30 p-2 rounded text-center">
-                  <div className="text-blue-600 dark:text-blue-400 font-bold text-xl">{user.draws}</div>
+                  <div className="text-blue-600 dark:text-blue-400 font-bold text-xl">{userData.num_draws}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Draws</div>
                 </div>
               </div>
@@ -114,11 +137,8 @@ const Profile = () => {
             
             {/* Actions */}
             <div className="flex flex-col gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setActiveTab("settings")}>
                 Edit Profile
-              </Button>
-              <Button variant="outline" size="sm">
-                Find Friends
               </Button>
             </div>
           </div>
@@ -319,7 +339,7 @@ const Profile = () => {
                       <input
                         type="text"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        defaultValue={user.username}
+                        defaultValue={userData.name}
                       />
                     </div>
                     <div>
@@ -328,8 +348,9 @@ const Profile = () => {
                       </label>
                       <input
                         type="email"
+                        readOnly
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        defaultValue="user@example.com"
+                        defaultValue={userData.email}
                       />
                     </div>
                   </div>

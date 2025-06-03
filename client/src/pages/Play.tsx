@@ -17,7 +17,7 @@ const Play = () => {
     },
     {
       id: 'multi',
-      title: 'Online Multiplayer',
+      title: 'PvP',
       description: 'Play against human opponents from around the world',
       icon: <Users className="w-8 h-8" />,
       path: '/play/multi',
@@ -25,7 +25,7 @@ const Play = () => {
     },
     {
       id: 'local',
-      title: 'Local Multiplayer',
+      title: 'Same Device',
       description: 'Play against a friend on the same device',
       icon: <UserPlus className="w-8 h-8" />,
       path: '/play/local',

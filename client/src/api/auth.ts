@@ -27,10 +27,5 @@ export const login = async (email: string, password: string) => {
         body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
-    }
-
     return await response.json();
 }

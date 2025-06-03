@@ -28,8 +28,8 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Password is incorrect' });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user.id, email: user.email } });
+    const token = jwt.sign({ uid: user.uid, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token, user: { uid: user.uid, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
