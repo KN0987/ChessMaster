@@ -1,10 +1,29 @@
-import { Check as ChessKing } from "lucide-react";
-
 const Loading = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <div className="animate-pulse-slow">
-        <ChessKing className="w-16 h-16 text-primary-600 dark:text-primary-400" />
+      <div>
+        <img
+          src="/chess-icon.png"
+          className="w-20 h-20 animate-[bounce-slow_2s_ease-in-out_infinite]"
+          style={{
+            animationName: 'bounce-slow',
+            animationDuration: '1s',
+            animationTimingFunction: 'ease-in-out',
+            animationIterationCount: 'infinite',
+          }}
+        />
+        <style>
+          {`
+            @keyframes bounce-slow {
+              0%, 100% {
+                transform: translateY(0);
+              }
+              50% {
+                transform: translateY(-10px);
+              }
+            }
+          `}
+        </style>
       </div>
       <h2 className="mt-4 text-xl font-serif font-bold text-gray-700 dark:text-gray-300">
         Loading...

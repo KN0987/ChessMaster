@@ -83,7 +83,7 @@ const Play = () => {
                     <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-full">
                       {mode.icon}
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    <h2 className="font-serif text-xl font-bold text-gray-900 dark:text-white">
                       {mode.title}
                     </h2>
                   </div>

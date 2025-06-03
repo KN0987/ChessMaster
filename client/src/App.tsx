@@ -2,17 +2,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Layout from "./components/layout/Layout";
 import Loading from "./components/ui/Loading";
+import Signin from "./pages/Signin";
+import Signup from "./pages/Signup";
+import NotFound from "./pages/NotFound";
+import Play from "./pages/Play";
 
 // Lazy load pages for better performance
-const Play = lazy(() => import("./pages/Play"));
 const Profile = lazy(() => import("./pages/Profile"));
 const SinglePlayer = lazy(() => import("./pages/SinglePlayer"));
 const MultiPlayer = lazy(() => import("./pages/MultiPlayer"));
 const LocalMultiPlayer = lazy(() => import("./pages/LocalMultiPlayer"));
 const GameRoom = lazy(() => import("./pages/GameRoom"));
-const Signin = lazy(() => import("./pages/Signin"));
-const Signup = lazy(() => import("./pages/Signup"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
   return (
