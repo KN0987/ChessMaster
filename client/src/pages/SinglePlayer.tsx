@@ -58,7 +58,7 @@ const SinglePlayer = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center mb-6">
-          <Link to="/play" className="mr-4">
+          <Link to="/" className="mr-4">
             <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
               Back
             </Button>
