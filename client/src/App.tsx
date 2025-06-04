@@ -18,8 +18,12 @@ const GameRoom = lazy(() => import("./pages/GameRoom"));
 
 function App() {
   return (
-    <BrowserRouter>
-      <Layout>
+    <BrowserRouter
+      future={{
+        v7_relativeSplatPath: true,
+        v7_startTransition: true,
+      }}
+    >      <Layout>
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Play />} />

@@ -7,53 +7,105 @@ const setupSocket = (server) => {
     },
   });
 
-  // Store players waiting for a match using their uid
-  let waitingPlayers = [];
+  const waitingPlayers = {
+    blitz: [],
+    quick: [],
+    normal: [],
+  };
+
+  // Stores pending matches awaiting player confirmation
+  const pendingMatches = new Map();
 
   io.on('connection', (socket) => {
     console.log('A player connected:', socket.id);
 
-    // When a player joins the queue
     socket.on('joinQueue', ({ matchType, timeControl, uid }) => {
-      // Store the player's uid in the waiting queue
-      waitingPlayers.push({ socketId: socket.id, uid, matchType, timeControl });
-      console.log(`Player ${uid} joined the queue. Waiting players: ${waitingPlayers.length}`);
+      const queue = waitingPlayers[timeControl];
 
-      if (waitingPlayers.length >= 2) {
-        // Match two players
-        const player1 = waitingPlayers.pop();
-        const player2 = waitingPlayers.pop();
+      if (!queue) {
+        console.warn(`Invalid timeControl: ${timeControl}`);
+        return;
+      }
 
-        const roomId = generateUniqueRoomId();
-        io.to(player1.socketId).join(roomId); // Player 1 joins the room
-        io.to(player2.socketId).join(roomId); // Player 2 joins the room
+      queue.push({ socketId: socket.id, uid, matchType });
+      console.log('Adding Player to queue: ',waitingPlayers);
 
-        // Notify both players that they have been matched
-        io.to(player1.socketId).emit('matchFound', { roomId, opponent: player2.uid });
-        io.to(player2.socketId).emit('matchFound', { roomId, opponent: player1.uid });
+      if (queue.length >= 2) {
+        const player1 = queue.shift();
+        const player2 = queue.shift();
 
-        // Start the game
-        io.to(roomId).emit('gameStart');
+        const matchId = generateUniqueRoomId();
+
+        pendingMatches.set(matchId, {
+          player1,
+          player2,
+          accepted: new Set(),
+        });
+
+        io.to(player1.socketId).emit('matchFound', { matchId, opponent: player2.uid });
+        io.to(player2.socketId).emit('matchFound', { matchId, opponent: player1.uid });
       }
     });
 
-    // Handle disconnections
-    socket.on('disconnect', () => {
-      console.log('A player disconnected:', socket.id);
-      // Remove from waiting players if they were waiting for a match
-      waitingPlayers = waitingPlayers.filter(player => player.socketId !== socket.id);
+    socket.on('acceptMatch', ({ matchId, uid }) => {
+      const match = pendingMatches.get(matchId);
+      if (!match) return;
+
+      match.accepted.add(uid);
+
+      if (
+        match.accepted.has(match.player1.uid) &&
+        match.accepted.has(match.player2.uid)
+      ) {
+        const roomId = generateUniqueRoomId();
+        console.log(`Starting match ${matchId} in room ${roomId}`);
+
+        io.sockets.sockets.get(match.player1.socketId)?.join(roomId);
+        io.sockets.sockets.get(match.player2.socketId)?.join(roomId);
+
+        io.to(roomId).emit('gameStart', { roomId });
+        pendingMatches.delete(matchId);
+      }
     });
 
-    // Handle cancelQueue event
+    socket.on('declineMatch', ({ matchId, uid }) => {
+      const match = pendingMatches.get(matchId);
+      if (!match) return;
+
+      io.to(match.player1.socketId).emit('matchDeclined', { declinedBy: uid });
+      io.to(match.player2.socketId).emit('matchDeclined', { declinedBy: uid });
+
+      pendingMatches.delete(matchId);
+    });
+
     socket.on('cancelQueue', ({ uid }) => {
-      waitingPlayers = waitingPlayers.filter(player => player.uid !== uid); // Remove player from queue by uid
+      Object.keys(waitingPlayers).forEach(type => {
+        waitingPlayers[type] = waitingPlayers[type].filter(p => p.uid !== uid);
+      });
       console.log(`Player ${uid} cancelled waiting`);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('A player disconnected:', socket.id);
+
+      // Remove from queues
+      Object.keys(waitingPlayers).forEach(type => {
+        waitingPlayers[type] = waitingPlayers[type].filter(p => p.socketId !== socket.id);
+      });
+
+      // Remove from pending matches
+      for (const [matchId, match] of pendingMatches.entries()) {
+        if (match.player1.socketId === socket.id || match.player2.socketId === socket.id) {
+          io.to(match.player1.socketId).emit('matchDeclined', { declinedBy: 'disconnected' });
+          io.to(match.player2.socketId).emit('matchDeclined', { declinedBy: 'disconnected' });
+          pendingMatches.delete(matchId);
+        }
+      }
     });
   });
 
-  // Function to generate a unique room ID
   const generateUniqueRoomId = () => {
-    return Math.random().toString(36).substr(2, 9); // Random 9-character string
+    return Math.random().toString(36).substr(2, 9);
   };
 };
 
