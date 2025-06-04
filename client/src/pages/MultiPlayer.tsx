@@ -76,11 +76,9 @@ const MultiPlayer = () => {
         setWaitingTime((prevTime) => prevTime + 1);
       }, 1000); // Update every second
     } else {
-      // Reset the waiting time if the button is not clicked or if cancelled
       setWaitingTime(0);
     }
 
-    // Cleanup the interval when the timer is not active
     return () => {
       if (timerInterval) {
         clearInterval(timerInterval);

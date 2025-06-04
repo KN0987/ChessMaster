@@ -37,12 +37,12 @@ const ChessPiece = ({ type, color, isSelected = false, className }: ChessPiecePr
     <div
       className={twMerge(
         "w-full h-full flex items-center justify-center piece-transition select-none",
-        isSelected ? "scale-110" : "",
+        isSelected ? "scale-105" : "",
         color === "w" ? "text-white drop-shadow-md" : "text-gray-900",
         className
       )}
     >
-      <span className="text-4xl font-bold">
+      <span className="text-4xl md:text-8xl font-bold">
         {getPieceUnicode(type, color)}
       </span>
     </div>

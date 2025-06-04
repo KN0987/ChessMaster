@@ -134,8 +134,9 @@ const ChessBoard = ({
             className={twMerge(
               "relative w-1/8 aspect-square flex items-center justify-center",
               isLight ? "bg-board-light" : "bg-board-dark",
-              selectedSquare === square && "ring-4 ring-primary-500 ring-inset",
-              legalMoves.includes(square) && "after:absolute after:w-4 after:h-4 after:rounded-full after:bg-primary-500/60"
+              legalMoves.includes(square) && "after:absolute after:w-4 after:h-4 after:rounded-full",
+              game.turn() === "w" ? "after:bg-white" : "after:bg-black",
+      
             )}
             onClick={() => handleSquareClick(square)}
             data-square={square}
