@@ -18,7 +18,6 @@ const Profile = () => {
     email: "???@example.com",
   });
 
-  console.log("userData", userData);
 
   // Mock recent games
   const recentGames = [

@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { login } from "../api/auth";
+import {useUser} from "../context/UserContext";
 
 export default function Signin() {
+    const { setUserInfo } = useUser();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
@@ -20,7 +22,9 @@ export default function Signin() {
             setError(response.error);
             return;
         }
+
         console.log("Login successful:", response);
+        setUserInfo(response.user);
         localStorage.setItem("sessionId", response.token);
 
         // navigate to the home page

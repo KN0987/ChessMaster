@@ -6,7 +6,7 @@ import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Play from "./pages/Play";
-
+import { UserProvider } from "./context/UserContext";
 // Lazy load pages for better performance
 const Profile = lazy(() => import("./pages/Profile"));
 const SinglePlayer = lazy(() => import("./pages/SinglePlayer"));
