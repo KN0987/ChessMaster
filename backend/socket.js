@@ -39,6 +39,8 @@ const setupSocket = (server) => {
         pendingMatches.set(matchId, {
           player1,
           player2,
+          timeControl,
+          matchType,
           accepted: new Set(),
         });
 
@@ -46,6 +48,23 @@ const setupSocket = (server) => {
         io.to(player2.socketId).emit('matchFound', { matchId, opponent: player1.uid });
       }
     });
+
+    socket.on("cancelQueue", ({timeControl, uid }) => {
+      const queue = waitingPlayers[timeControl];
+      if (!queue) {
+        console.warn(`Invalid timeControl: ${timeControl}`);
+        return;
+      }
+
+      const index = queue.findIndex(player => player.uid === uid);
+      if (index !== -1) {
+        queue.splice(index, 1);
+        console.log(`Player ${uid} removed from ${timeControl} queue.`);
+        console.log('Current waiting players:', waitingPlayers);
+      } else {
+        console.warn(`Player ${uid} not found in ${timeControl} queue.`);
+      }
+    })
 
     socket.on('acceptMatch', ({ matchId, uid }) => {
       const match = pendingMatches.get(matchId);
@@ -71,19 +90,26 @@ const setupSocket = (server) => {
     socket.on('declineMatch', ({ matchId, uid }) => {
       const match = pendingMatches.get(matchId);
       if (!match) return;
-
-      io.to(match.player1.socketId).emit('matchDeclined', { declinedBy: uid });
-      io.to(match.player2.socketId).emit('matchDeclined', { declinedBy: uid });
-
+    
+      const { player1, player2, timeControl } = match;
+      console.log("Player 1", player1);
+      console.log("Player 2", player2);
+      const declinedBy = uid;
+      const otherPlayer = player1.uid === uid ? player2 : player1;
+    
+      // Requeue the player who accepted
+      if (timeControl) {
+        waitingPlayers[timeControl].push(otherPlayer);
+      }
+    
+      // Notify both players
+      io.to(player1.socketId).emit('matchDeclined', { declinedBy: uid });
+      io.to(player2.socketId).emit('matchDeclined', { declinedBy: uid });
+    
       pendingMatches.delete(matchId);
+      console.log('Match declined by', uid, ". Current waiting players:", waitingPlayers);
     });
-
-    socket.on('cancelQueue', ({ uid }) => {
-      Object.keys(waitingPlayers).forEach(type => {
-        waitingPlayers[type] = waitingPlayers[type].filter(p => p.uid !== uid);
-      });
-      console.log(`Player ${uid} cancelled waiting`);
-    });
+    
 
     socket.on('disconnect', () => {
       console.log('A player disconnected:', socket.id);

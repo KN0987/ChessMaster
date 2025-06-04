@@ -43,9 +43,13 @@ const MultiPlayer = () => {
     newSocket.on('matchDeclined', ({ declinedBy }) => {
       console.log(`Match was declined by: ${declinedBy}`);
       setShowMatchPopup(false);
-      setIsWaiting(false);
-      setIsFindButtonClicked(false);
-      setWaitingTime(0);
+    
+      if (declinedBy === uid) {
+        // I declined, so stop searching
+        setIsWaiting(false);
+        setIsFindButtonClicked(false);
+      }
+    
     });
 
     newSocket.on('gameStart', ({ roomId }) => {
@@ -67,7 +71,7 @@ const MultiPlayer = () => {
 
   const handleCancelWaiting = () => {
     if (socket) {
-      socket.emit('cancelQueue', { uid });
+      socket.emit('cancelQueue', { timeControl, uid });
       setIsFindButtonClicked(false);
       setIsWaiting(false);
       setWaitingTime(0);
@@ -204,9 +208,6 @@ const MultiPlayer = () => {
               socket?.emit('declineMatch', { matchId, uid });
             }
             setShowMatchPopup(false);
-            setIsWaiting(false);
-            setIsFindButtonClicked(false);
-            setWaitingTime(0);
           }}
         />
       )}
