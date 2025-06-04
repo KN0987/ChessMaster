@@ -1,16 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { getUserData } from '../api/user';
+import {User} from '../types/user';
 
-interface User {
-  name: string;
-  email: string;
-  elo: number;
-  created_at: string;
-  total_games: number;
-  num_wins: number;
-  num_losses: number;
-  num_draws: number;
-}
 
 interface UserContextType {
   user: User | null;

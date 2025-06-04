@@ -19,6 +19,7 @@ export interface Player {
   avatar?: string;
 }
 
+
 export type GameStatus = 'waiting' | 'active' | 'completed' | 'aborted';
 
 export interface TimeControl {

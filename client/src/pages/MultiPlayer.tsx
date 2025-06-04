@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Search, UserPlus, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import io from 'socket.io-client';
+import { useUser } from '../context/UserContext';
 
 const MultiPlayer = () => {
   const [matchType, setMatchType] = useState<string>('random');
   const [timeControl, setTimeControl] = useState<string>('blitz');
+  const [socket, setSocket] = useState<any>(null); // Socket connection
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [opponent, setOpponent] = useState<string | null>(null);
+  const [waitingTime, setWaitingTime] = useState<number>(0); // Store the waiting time in seconds
+  const [isFindButtonClicked, setIsFindButtonClicked] = useState<boolean>(false); // Track if the button is clicked
+  const [isWaiting, setIsWaiting] = useState<boolean>(false); // Track whether the user is waiting for a match
+
+  const { user } = useUser(); 
+  const uid = user?.uid || '';
   
   const timeControls = [
     { id: 'bullet', name: 'Bullet', time: '1+0', description: 'Super fast games' },
@@ -14,10 +25,71 @@ const MultiPlayer = () => {
     { id: 'rapid', name: 'Rapid', time: '10+0', description: 'More time to think' },
     { id: 'classical', name: 'Classical', time: '30+0', description: 'Strategic depth' },
   ];
-  
+
+  // Set up socket connection when the component mounts
+  useEffect(() => {
+    const newSocket = io('http://localhost:3001'); // Connect to the server
+    setSocket(newSocket);
+
+    // Listen for the matchFound event
+    newSocket.on('matchFound', ({ roomId, opponent }) => {
+      setRoomId(roomId); // Store the room ID
+      setOpponent(opponent); // Store the opponent's name
+      console.log(`Matched with opponent: ${opponent}`);
+    });
+
+    return () => newSocket.close(); // Cleanup socket connection on unmount
+  }, []);
+
+  // Handle finding a match (emit to the server)
   const handleFindMatch = () => {
-    // In a real app, this would connect to matchmaking service
-    console.log('Finding match with:', { matchType, timeControl });
+    if (socket) {
+      console.log('Finding match with:', { matchType, timeControl, uid });
+      // Emit to the server to join the queue using uid instead of socket.id
+      socket.emit('joinQueue', { matchType, timeControl, uid });
+      setIsFindButtonClicked(true);
+      setIsWaiting(true);
+    }
+  };
+
+  // Handle cancelling waiting (emit to the server and reset state)
+  const handleCancelWaiting = () => {
+    if (socket) {
+      console.log('Cancelling waiting...');
+      socket.emit('cancelQueue', { uid }); // Notify the server to remove the player from the queue
+      setIsFindButtonClicked(false); // Reset the button text
+      setIsWaiting(false); // Stop waiting
+      setWaitingTime(0); // Reset the timer
+    }
+  };
+
+  // Start the timer when the button is clicked
+  useEffect(() => {
+    let timerInterval: NodeJS.Timeout | null = null;
+
+    if (isFindButtonClicked && isWaiting) {
+      // Start the timer (incrementing the time every second)
+      timerInterval = setInterval(() => {
+        setWaitingTime((prevTime) => prevTime + 1);
+      }, 1000); // Update every second
+    } else {
+      // Reset the waiting time if the button is not clicked or if cancelled
+      setWaitingTime(0);
+    }
+
+    // Cleanup the interval when the timer is not active
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [isFindButtonClicked, isWaiting]);
+
+  // Format the waiting time to "MM:SS"
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
   return (
@@ -137,7 +209,7 @@ const MultiPlayer = () => {
               leftIcon={<Search className="w-5 h-5" />}
               onClick={handleFindMatch}
             >
-              Find Match
+              {isFindButtonClicked ? <>{formatTime(waitingTime)}</> : <>Find Match</>}
             </Button>
           ) : (
             <Button
@@ -148,43 +220,16 @@ const MultiPlayer = () => {
               Create Game
             </Button>
           )}
-        </div>
-        
-        {/* Online Players */}
-        <div className="mt-12">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif text-xl font-bold text-gray-900 dark:text-white">
-              Online Players
-            </h2>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                1,243 players online
-              </span>
-            </div>
-          </div>
           
-          <Card>
-            <CardBody className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800 dark:text-gray-200">
-                        Player{index + 1}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {1200 + Math.floor(Math.random() * 800)} ELO
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardBody>
-          </Card>
+          {isFindButtonClicked && (
+            <Button
+              size="lg"
+              variant="danger"
+              onClick={handleCancelWaiting}
+            >
+              Cancel Waiting
+            </Button>
+          )}
         </div>
       </div>
     </div>
