@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useUser } from '../../context/UserContext'; // Import the UserContext hook
 
 const Navbar = () => {
+  const { user, setUserInfo } = useUser(); // Get user info and loading state from context
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -14,14 +15,10 @@ const Navbar = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem("sessionId");
-    setIsLoggedIn(false);
-    navigate("/"); // optional: redirect to home after sign out
+    setUserInfo(null);
+    navigate("/"); 
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("sessionId");
-    setIsLoggedIn(!!token);
-  }, [location]);
 
   const navLinks = [
     { path: '/', label: 'Home' },
@@ -54,7 +51,7 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {isLoggedIn ? (
+            {user ? (
               <button
                 onClick={handleSignOut}
                 className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900"
@@ -104,7 +101,7 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {isLoggedIn ? (
+            {user ? (
               <button
                 onClick={() => {
                   handleSignOut();

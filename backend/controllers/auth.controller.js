@@ -34,7 +34,7 @@ export const login = async (req, res) => {
 
     console.log(`User data retrieved: ${JSON.stringify(userData)}`); // Debugging line
 
-    const token = jwt.sign({ uid: user.uid, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ uid: user.uid, email: user.email }, JWT_SECRET, { expiresIn: '36hr' });
     res.json({ token, user: userData });
   } catch (err) {
     res.status(500).json({ error: err.message });
