@@ -21,7 +21,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(`Login attempt for email: ${email}`); // Debugging line
   try {
     const user = await findUserByEmail(email);
     if (!user) return res.status(400).json({ error: 'Email not found' });
@@ -32,7 +31,6 @@ export const login = async (req, res) => {
     const userData = await getUser(user.uid);
     if (!userData) return res.status(404).json({ error: 'User data not found' });
 
-    console.log(`User data retrieved: ${JSON.stringify(userData)}`); // Debugging line
 
     const token = jwt.sign({ uid: user.uid, email: user.email }, JWT_SECRET, { expiresIn: '36hr' });
     res.json({ token, user: userData });

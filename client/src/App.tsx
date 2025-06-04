@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ProtectedRoutes } from "./components/protectedRoutes/ProtectedRoutes";
+import { AuthRedirectRoutes } from "./components/protectedRoutes/AuthRedirectRoutes";
 import Layout from "./components/layout/Layout";
 import Loading from "./components/ui/Loading";
 import Signin from "./pages/Signin";
@@ -22,8 +23,10 @@ function App() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Play />} />
-            <Route path="/signin" element={<Signin />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route element={<AuthRedirectRoutes />}>
+              <Route path="/signin" element={<Signin />} />
+              <Route path="/signup" element={<Signup />} />
+            </Route>
             <Route path="/profile" element={<Profile />} />
             <Route element={<ProtectedRoutes />}>
               <Route path="/game/:roomId" element={<GameRoom />} />
