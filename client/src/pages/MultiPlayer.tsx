@@ -5,6 +5,7 @@ import { Card, CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import io from 'socket.io-client';
 import { useUser } from '../context/UserContext';
+import { BACKEND_URL } from '../config/config';
 
 const MultiPlayer = () => {
   const [matchType, setMatchType] = useState<string>('random');
@@ -16,19 +17,18 @@ const MultiPlayer = () => {
   const [isFindButtonClicked, setIsFindButtonClicked] = useState<boolean>(false); // Track if the button is clicked
   const [isWaiting, setIsWaiting] = useState<boolean>(false); // Track whether the user is waiting for a match
 
-  const { user } = useUser(); 
+  const { user } = useUser();
   const uid = user?.uid || '';
-  
+
   const timeControls = [
-    { id: 'bullet', name: 'Bullet', time: '1+0', description: 'Super fast games' },
-    { id: 'blitz', name: 'Blitz', time: '3+2', description: 'Quick thinking required' },
-    { id: 'rapid', name: 'Rapid', time: '10+0', description: 'More time to think' },
-    { id: 'classical', name: 'Classical', time: '30+0', description: 'Strategic depth' },
+    { id: 'blitz', name: 'Blitz', time: '3+2', description: '3 mins with 2-second increment per move' },
+    { id: 'quick', name: 'Quick', time: '10+0', description: 'More time to think' },
+    { id: 'normal', name: 'Normal', time: '30+0', description: 'Strategic depth' },
   ];
 
   // Set up socket connection when the component mounts
   useEffect(() => {
-    const newSocket = io('http://localhost:3001'); // Connect to the server
+    const newSocket = io(BACKEND_URL); // Connect to the server
     setSocket(newSocket);
 
     // Listen for the matchFound event
@@ -38,7 +38,10 @@ const MultiPlayer = () => {
       console.log(`Matched with opponent: ${opponent}`);
     });
 
-    return () => newSocket.close(); // Cleanup socket connection on unmount
+    // Cleanup function to close the socket when the component is unmounted
+    return () => {
+      newSocket.close(); // Close the socket connection
+    };
   }, []);
 
   // Handle finding a match (emit to the server)
@@ -105,102 +108,104 @@ const MultiPlayer = () => {
             Online Multiplayer
           </h1>
         </div>
-        
+
         <p className="text-gray-600 dark:text-gray-300 mb-8">
           Challenge players from around the world in real-time matches. Find an opponent that matches your skill level or invite a friend.
         </p>
-        
+
         {/* Match Type */}
         <h2 className="font-serif text-xl font-bold mb-4 text-gray-900 dark:text-white">
           Choose Match Type
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {/* Random Match */}
-          <Card 
-            className={`cursor-pointer transition-all ${
-              matchType === 'random'
-                ? 'ring-2 ring-primary-500 dark:ring-primary-400'
-                : 'hover:shadow-md'
-            }`}
-            onClick={() => setMatchType('random')}
+          <div onClick={() => setMatchType('random')}
           >
-            <CardBody className="p-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
-                  <Search className="w-8 h-8" />
+            <Card
+              className={`cursor-pointer transition-all ${matchType === 'random'
+                  ? 'ring-2 ring-primary-500 dark:ring-primary-400'
+                  : 'hover:shadow-md'
+                }`}
+            >
+              <CardBody className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                    <Search className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Random Opponent
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Get matched with a player of similar rating from around the world
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Random Opponent
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Get matched with a player of similar rating from around the world
-                  </p>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-          
+              </CardBody>
+            </Card>
+          </div>
+
           {/* Friend Match */}
-          <Card 
-            className={`cursor-pointer transition-all ${
-              matchType === 'friend'
-                ? 'ring-2 ring-primary-500 dark:ring-primary-400'
-                : 'hover:shadow-md'
-            }`}
-            onClick={() => setMatchType('friend')}
-          >
-            <CardBody className="p-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300">
-                  <UserPlus className="w-8 h-8" />
+          <div onClick={() => setMatchType('friend')}>
+            <Card
+              className={`cursor-pointer transition-all ${matchType === 'friend'
+                  ? 'ring-2 ring-primary-500 dark:ring-primary-400'
+                  : 'hover:shadow-md'
+                }`}
+            >
+              <CardBody className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300">
+                    <UserPlus className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Challenge a Friend
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Create a private game and invite a friend to play
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Challenge a Friend
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Create a private game and invite a friend to play
-                  </p>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
+          </div>
         </div>
-        
+
         {/* Time Controls */}
         <h2 className="font-serif text-xl font-bold mb-4 text-gray-900 dark:text-white">
           Select Time Control
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
           {timeControls.map((control) => (
-            <Card
-              key={control.id}
-              className={`cursor-pointer transition-all ${
-                timeControl === control.id
-                  ? 'ring-2 ring-primary-500 dark:ring-primary-400'
-                  : 'hover:shadow-md'
-              }`}
-              onClick={() => setTimeControl(control.id)}
+            <div onClick={() => setTimeControl(control.id)}
             >
-              <CardBody className="p-4 text-center">
-                <div className="flex flex-col items-center">
-                  <Clock className="w-6 h-6 text-primary-600 dark:text-primary-400 mb-2" />
-                  <h3 className="font-bold text-gray-900 dark:text-white">
-                    {control.name}
-                  </h3>
-                  <p className="text-lg font-mono font-medium text-primary-600 dark:text-primary-400">
-                    {control.time}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {control.description}
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
+              <Card
+                key={control.id}
+                className={`cursor-pointer transition-all ${timeControl === control.id
+                    ? 'ring-2 ring-primary-500 dark:ring-primary-400'
+                    : 'hover:shadow-md'
+                  }`}
+              >
+                <CardBody className="p-4 text-center">
+                  <div className="flex flex-col items-center">
+                    <Clock className="w-6 h-6 text-primary-600 dark:text-primary-400 mb-2" />
+                    <h3 className="font-bold text-gray-900 dark:text-white">
+                      {control.name}
+                    </h3>
+                    <p className="text-lg font-mono font-medium text-primary-600 dark:text-primary-400">
+                      {control.time}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {control.description}
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
           ))}
         </div>
-        
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
           {matchType === 'random' ? (
@@ -220,7 +225,7 @@ const MultiPlayer = () => {
               Create Game
             </Button>
           )}
-          
+
           {isFindButtonClicked && (
             <Button
               size="lg"
