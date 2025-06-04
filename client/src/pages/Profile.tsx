@@ -160,8 +160,8 @@ const Profile = () => {
             <button
               key={tab.id}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === tab.id
-                  ? "border-primary-500 text-primary-600 dark:text-primary-400"
-                  : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                ? "border-primary-500 text-primary-600 dark:text-primary-400"
+                : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                 }`}
               onClick={() => setActiveTab(tab.id)}
             >
@@ -214,8 +214,8 @@ const Profile = () => {
                           <td className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">{player.totalGames}</td>
                           <td className="px-4 py-4">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${player.isActive
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                               }`}>
                               {player.isActive ? "Online" : "Offline"}
                             </span>
@@ -299,10 +299,10 @@ const Profile = () => {
                             <td className="px-4 py-4 whitespace-nowrap">
                               <span
                                 className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${game.result === "win"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                    : game.result === "loss"
-                                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                      : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                  : game.result === "loss"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                                   }`}
                               >
                                 {game.result.charAt(0).toUpperCase() + game.result.slice(1)}
@@ -413,6 +413,7 @@ const Profile = () => {
                         type="text"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         defaultValue={userData.name}
+                        readOnly={!isLoggedIn}
                       />
                     </div>
                     <div>
@@ -436,24 +437,6 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700 dark:text-gray-300">
-                        Dark Mode
-                      </span>
-                      <div className="relative inline-block w-10 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
-                        <input
-                          type="checkbox"
-                          id="toggle"
-                          className="absolute w-0 h-0 opacity-0"
-                          defaultChecked
-                        />
-                        <label
-                          htmlFor="toggle"
-                          className="absolute inset-0 rounded-full bg-primary-500 cursor-pointer transition-colors duration-200 ease-in-out"
-                        ></label>
-                        <span className="absolute inset-y-0 left-0 flex items-center justify-center w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out translate-x-4"></span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-700 dark:text-gray-300">
                         Sound Effects
                       </span>
                       <div className="relative inline-block w-10 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
@@ -474,7 +457,7 @@ const Profile = () => {
                 </div>
 
                 <div className="pt-4">
-                  <Button>
+                  <Button disabled={!isLoggedIn} >
                     Save Changes
                   </Button>
                 </div>
