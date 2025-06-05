@@ -13,7 +13,6 @@ const setupSocket = (server) => {
     normal: [],
   };
 
-  // Stores pending matches awaiting player confirmation
   const pendingMatches = new Map();
 
   io.on('connection', (socket) => {
@@ -21,20 +20,40 @@ const setupSocket = (server) => {
 
     socket.on('joinQueue', ({ matchType, timeControl, uid }) => {
       const queue = waitingPlayers[timeControl];
-
       if (!queue) {
         console.warn(`Invalid timeControl: ${timeControl}`);
         return;
       }
 
       queue.push({ socketId: socket.id, uid, matchType });
-      console.log('Adding Player to queue: ',waitingPlayers);
+      console.log('Queue updated:', waitingPlayers);
 
       if (queue.length >= 2) {
         const player1 = queue.shift();
         const player2 = queue.shift();
-
         const matchId = generateUniqueRoomId();
+
+        const timeout = setTimeout(() => {
+          const match = pendingMatches.get(matchId);
+          if (!match) return;
+
+          const { accepted, player1, player2, timeControl } = match;
+
+          if (!accepted.has(player1.uid) && !accepted.has(player2.uid)) {
+            io.to(player1.socketId).emit('matchDeclined', { declinedBy: player1.uid, reason: 'timeout' });
+            io.to(player2.socketId).emit('matchDeclined', { declinedBy: player2.uid, reason: 'timeout' });
+            pendingMatches.delete(matchId);
+          } else {
+            const acceptedPlayer = accepted.has(player1.uid) ? player1 : player2;
+            const declinedPlayer = accepted.has(player1.uid) ? player2 : player1;
+
+            io.to(acceptedPlayer.socketId).emit('matchDeclined', { declinedBy: declinedPlayer.uid, reason: 'timeout' });
+            io.to(declinedPlayer.socketId).emit('matchDeclined', { declinedBy: declinedPlayer.uid, reason: 'timeout' });
+
+            waitingPlayers[timeControl].push(acceptedPlayer);
+            pendingMatches.delete(matchId);
+          }
+        }, 15000);
 
         pendingMatches.set(matchId, {
           player1,
@@ -42,6 +61,7 @@ const setupSocket = (server) => {
           timeControl,
           matchType,
           accepted: new Set(),
+          timeout,
         });
 
         io.to(player1.socketId).emit('matchFound', { matchId, opponent: player2.uid });
@@ -49,22 +69,16 @@ const setupSocket = (server) => {
       }
     });
 
-    socket.on("cancelQueue", ({timeControl, uid }) => {
+    socket.on('cancelQueue', ({ timeControl, uid }) => {
       const queue = waitingPlayers[timeControl];
-      if (!queue) {
-        console.warn(`Invalid timeControl: ${timeControl}`);
-        return;
-      }
+      if (!queue) return;
 
       const index = queue.findIndex(player => player.uid === uid);
       if (index !== -1) {
         queue.splice(index, 1);
         console.log(`Player ${uid} removed from ${timeControl} queue.`);
-        console.log('Current waiting players:', waitingPlayers);
-      } else {
-        console.warn(`Player ${uid} not found in ${timeControl} queue.`);
       }
-    })
+    });
 
     socket.on('acceptMatch', ({ matchId, uid }) => {
       const match = pendingMatches.get(matchId);
@@ -76,8 +90,10 @@ const setupSocket = (server) => {
         match.accepted.has(match.player1.uid) &&
         match.accepted.has(match.player2.uid)
       ) {
+        clearTimeout(match.timeout);
+
         const roomId = generateUniqueRoomId();
-        console.log(`Starting match ${matchId} in room ${roomId}`);
+        console.log(`Both players accepted. Starting match ${matchId} in room ${roomId}`);
 
         io.sockets.sockets.get(match.player1.socketId)?.join(roomId);
         io.sockets.sockets.get(match.player2.socketId)?.join(roomId);
@@ -90,40 +106,34 @@ const setupSocket = (server) => {
     socket.on('declineMatch', ({ matchId, uid }) => {
       const match = pendingMatches.get(matchId);
       if (!match) return;
-    
+
+      clearTimeout(match.timeout);
+
       const { player1, player2, timeControl } = match;
-      console.log("Player 1", player1);
-      console.log("Player 2", player2);
       const declinedBy = uid;
       const otherPlayer = player1.uid === uid ? player2 : player1;
-    
-      // Requeue the player who accepted
-      if (timeControl) {
-        waitingPlayers[timeControl].push(otherPlayer);
-      }
-    
-      // Notify both players
-      io.to(player1.socketId).emit('matchDeclined', { declinedBy: uid });
-      io.to(player2.socketId).emit('matchDeclined', { declinedBy: uid });
-    
+
+      waitingPlayers[timeControl].push(otherPlayer);
+
+      io.to(player1.socketId).emit('matchDeclined', { declinedBy: uid, reason: 'manual' });
+      io.to(player2.socketId).emit('matchDeclined', { declinedBy: uid, reason: 'manual' });
+
       pendingMatches.delete(matchId);
-      console.log('Match declined by', uid, ". Current waiting players:", waitingPlayers);
     });
-    
 
     socket.on('disconnect', () => {
       console.log('A player disconnected:', socket.id);
 
-      // Remove from queues
+      // Remove from waiting queues
       Object.keys(waitingPlayers).forEach(type => {
         waitingPlayers[type] = waitingPlayers[type].filter(p => p.socketId !== socket.id);
       });
 
-      // Remove from pending matches
       for (const [matchId, match] of pendingMatches.entries()) {
         if (match.player1.socketId === socket.id || match.player2.socketId === socket.id) {
-          io.to(match.player1.socketId).emit('matchDeclined', { declinedBy: 'disconnected' });
-          io.to(match.player2.socketId).emit('matchDeclined', { declinedBy: 'disconnected' });
+          clearTimeout(match.timeout);
+          io.to(match.player1.socketId).emit('matchDeclined', { declinedBy: 'disconnected', reason: 'disconnect' });
+          io.to(match.player2.socketId).emit('matchDeclined', { declinedBy: 'disconnected', reason: 'disconnect' });
           pendingMatches.delete(matchId);
         }
       }
@@ -131,7 +141,7 @@ const setupSocket = (server) => {
   });
 
   const generateUniqueRoomId = () => {
-    return Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).substring(2, 10);
   };
 };
 

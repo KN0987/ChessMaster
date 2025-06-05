@@ -19,6 +19,9 @@ const MultiPlayer = () => {
   const [isFindButtonClicked, setIsFindButtonClicked] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [countdown, setCountdown] = useState(15);
+  const [hasAccepted, setHasAccepted] = useState(false);
+
 
   const { user } = useUser();
   const uid = user?.uid || '';
@@ -40,16 +43,20 @@ const MultiPlayer = () => {
       setShowMatchPopup(true);
     });
 
-    newSocket.on('matchDeclined', ({ declinedBy }) => {
-      console.log(`Match was declined by: ${declinedBy}`);
+    newSocket.on('matchDeclined', ({ declinedBy, reason }) => {
+      console.log(`Match was declined by: ${declinedBy}. Reason: ${reason}`);
       setShowMatchPopup(false);
     
-      if (declinedBy === uid) {
-        // I declined, so stop searching
+      // If I declined or both timed out, stop searching
+      if (declinedBy === uid || (declinedBy=== uid && reason === 'timeout')) {
         setIsWaiting(false);
         setIsFindButtonClicked(false);
+        setWaitingTime(0);
+      } else {
+        // Opponent declined, so requeue me
+        setIsWaiting(true);
+        setIsFindButtonClicked(true);
       }
-    
     });
 
     newSocket.on('gameStart', ({ roomId }) => {
@@ -78,6 +85,17 @@ const MultiPlayer = () => {
     }
   };
 
+  const handleDecline = () => {
+    if (matchId && socket) {
+      socket?.emit('declineMatch', { matchId, uid });
+      console.log('Match declined:', matchId, "| uid:", uid);
+    }
+    setShowMatchPopup(false);
+    setIsWaiting(false);
+    setIsFindButtonClicked(false);
+    setWaitingTime(0);
+  }
+
   useEffect(() => {
     let timerInterval: ReturnType<typeof setInterval> | null = null;
   
@@ -101,6 +119,31 @@ const MultiPlayer = () => {
     const seconds = time % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
+
+  useEffect(() => {
+    if (!showMatchPopup || hasAccepted) return;
+  
+    setCountdown(15);
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleDecline();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, [showMatchPopup, hasAccepted]);
+
+  useEffect(() => {
+    if (showMatchPopup) {
+      setCountdown(15); 
+      setHasAccepted(false);
+    }
+  }, [showMatchPopup]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -196,19 +239,16 @@ const MultiPlayer = () => {
 
       {showMatchPopup && (
         <MatchFoundPopup
-          opponent={opponent}
+        countdown={countdown}
+        opponent={opponent}
           onAccept={() => {
             if (matchId && socket) {
               socket?.emit('acceptMatch', { matchId, uid });
             }
-            setShowMatchPopup(false);
+            setShowMatchPopup(true);
           }}
-          onDecline={() => {
-            if (matchId && socket) {
-              socket?.emit('declineMatch', { matchId, uid });
-            }
-            setShowMatchPopup(false);
-          }}
+          onDecline={handleDecline}
+          onUserAccepted={() => setHasAccepted(true)}
         />
       )}
     </div>
