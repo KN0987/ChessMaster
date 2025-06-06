@@ -25,6 +25,7 @@ interface GameControlsProps {
   gameInProgress?: boolean;
   moveHistory?: string[];
   orientation?: 'white' | 'black';
+  mode: string;
 }
 
 const GameControls = ({
@@ -38,7 +39,8 @@ const GameControls = ({
   canUndo = false,
   gameInProgress = true,
   moveHistory = [],
-  orientation = 'white'
+  orientation = 'white',
+  mode = 'local'
 }: GameControlsProps) => {
   const [viewingMove, setViewingMove] = useState(moveHistory.length);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -79,6 +81,7 @@ const GameControls = ({
               onClick={onUndo} 
               disabled={!canUndo}
               leftIcon={<RotateCcw className="w-4 h-4" />}
+              style={{ display: mode === 'online' ? 'none' : undefined}}
             >
               Undo
             </Button>
@@ -87,6 +90,7 @@ const GameControls = ({
               size="sm" 
               onClick={onFlipBoard}
               leftIcon={<RotateCcw className="w-4 h-4 rotate-90" />}
+              style={{ display: mode === 'online' ? 'none' : undefined}}
             >
               Flip Board
             </Button>

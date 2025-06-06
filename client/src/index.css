@@ -60,7 +60,7 @@
   }
 
   .cartoon-card {
-    @apply bg-white rounded-2xl border-4 border-gray-900 transition-all duration-300;
+    @apply bg-white rounded-lg border-4 border-gray-900 transition-all duration-300;
   }
 
   .cartoon-input {

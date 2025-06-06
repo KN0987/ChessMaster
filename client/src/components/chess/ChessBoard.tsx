@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Chess, Move, PieceSymbol, Color, Square } from "chess.js";
-import { Maximize2, Minimize2 } from "lucide-react";
 import ChessPiece from "./ChessPiece";
 import { twMerge } from "tailwind-merge";
 
@@ -44,21 +43,6 @@ const ChessBoard = ({
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
-
-  const toggleFullscreen = async () => {
-    try {
-      if (!isFullscreen) {
-        const boardElement = document.getElementById('chess-board');
-        if (boardElement) {
-          await boardElement.requestFullscreen();
-        }
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch (error) {
-      console.error('Fullscreen error:', error);
-    }
-  };
   
   // Handle square click
   const handleSquareClick = (square: Square) => {
@@ -174,7 +158,7 @@ const ChessBoard = ({
     <div 
       id="chess-board"
       className={twMerge(
-        "relative w-full max-w-2xl mx-auto overflow-hidden rounded-xl cartoon-card",
+        "relative w-full max-w-2xl mx-auto overflow-hidden cartoon-card",
         isFullscreen && "max-w-none h-screen flex items-center justify-center bg-gray-900",
         className
       )}
@@ -182,17 +166,6 @@ const ChessBoard = ({
       <div className="grid grid-cols-8 w-full">
         {renderBoard()}
       </div>
-      <button
-        onClick={toggleFullscreen}
-        className="absolute top-2 right-2 p-2 bg-white/90 rounded-lg shadow-md hover:bg-white transition-colors"
-        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-      >
-        {isFullscreen ? (
-          <Minimize2 className="w-5 h-5" />
-        ) : (
-          <Maximize2 className="w-5 h-5" />
-        )}
-      </button>
     </div>
   );
 };

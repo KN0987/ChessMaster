@@ -32,8 +32,8 @@ const PlayerInfo = ({
       className={twMerge(
         'flex items-center gap-3 p-3 rounded-lg transition-colors',
         isActive
-          ? 'bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-800'
-          : 'bg-gray-50 dark:bg-gray-800 border border-transparent',
+          ? 'bg-primary-50 dark:bg-primary-900 border border-black dark:border-primary-800'
+          : 'bg-gray-50 dark:bg-gray-800 border border-2 border-black',
         isTop ? 'order-first' : 'order-last',
         className
       )}

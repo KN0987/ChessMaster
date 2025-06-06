@@ -27,16 +27,20 @@ function App() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Play />} />
+
             <Route element={<AuthRedirectRoutes />}>
               <Route path="/signin" element={<Signin />} />
               <Route path="/signup" element={<Signup />} />
             </Route>
+            
             <Route path="/profile" element={<Profile />} />
+
             <Route element={<ProtectedRoutes />}>
               <Route path="/game/:roomId" element={<GameRoom />} />
               <Route path="/play/single" element={<SinglePlayer />} />
               <Route path="/play/multi" element={<MultiPlayer />} />
             </Route>
+
             <Route path="/play/local" element={<LocalMultiPlayer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

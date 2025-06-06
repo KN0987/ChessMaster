@@ -33,26 +33,26 @@ const GameRoom = () => {
       isSystem: true,
     },
   ]);
-  
+
   // Mock player data
   const whitePlayer = {
     username: "Player1",
     rating: 1650,
     timeLeft: timeWhite,
   };
-  
+
   const blackPlayer = {
     username: "Player2",
     rating: 1720,
     timeLeft: timeBlack,
   };
-  
+
   // Handle chess moves
   const handleMove = (move: Move) => {
     try {
       // Update move history
       setMoveHistory([...moveHistory, move.san]);
-      
+
       // Update game state (in a real app this would be synced with the server)
       const newGame = new Chess(game.fen());
       newGame.move({
@@ -61,7 +61,7 @@ const GameRoom = () => {
         promotion: move.promotion,
       });
       setGame(newGame);
-      
+
       // Check for game over
       if (newGame.isGameOver()) {
         let endMessage = "Game over: ";
@@ -77,7 +77,7 @@ const GameRoom = () => {
             endMessage += " (Insufficient Material)";
           }
         }
-        
+
         // Add game over message
         addMessage({
           id: Date.now().toString(),
@@ -91,12 +91,12 @@ const GameRoom = () => {
       console.error("Invalid move:", error);
     }
   };
-  
+
   // Flip the board
   const handleFlipBoard = () => {
     setOrientation(orientation === "white" ? "black" : "white");
   };
-  
+
   // Handle chat messages
   const handleSendMessage = (content: string) => {
     const newMessage: Message = {
@@ -107,16 +107,16 @@ const GameRoom = () => {
     };
     addMessage(newMessage);
   };
-  
+
   const addMessage = (message: Message) => {
     setMessages((prev) => [...prev, message]);
   };
-  
+
   // Toggle chat visibility
   const toggleChat = () => {
     setShowChat(!showChat);
   };
-  
+
   // Handle resign
   const handleResign = () => {
     addMessage({
@@ -127,7 +127,7 @@ const GameRoom = () => {
       isSystem: true,
     });
   };
-  
+
   // Handle offer draw
   const handleOfferDraw = () => {
     addMessage({
@@ -140,33 +140,26 @@ const GameRoom = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="h-screen container mx-auto px-4 py-6">
+      <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Game information */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="font-serif text-2xl font-bold text-gray-900 dark:text-white">
-                Game #{roomId}
-              </h1>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Clock className="w-4 h-4" />
-                <span>5:00</span>
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span>Live</span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
+        <div className="lg:col-span-2 flex flex-col h-full">
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex flex-col h-full">
+
+            <div className="flex flex-col justify-center items-center flex-grow">
               {/* Top player info */}
-              <PlayerInfo
-                username={orientation === "white" ? blackPlayer.username : whitePlayer.username}
-                rating={orientation === "white" ? blackPlayer.rating : whitePlayer.rating}
-                timeLeft={orientation === "white" ? timeBlack : timeWhite}
-                isActive={game.turn() === (orientation === "white" ? "b" : "w")}
-                isTop={true}
-              />
-              
+              <div className="lg:hidden w-full mb-2">
+  <PlayerInfo
+    username={orientation === "white" ? blackPlayer.username : whitePlayer.username}
+    rating={orientation === "white" ? blackPlayer.rating : whitePlayer.rating}
+    timeLeft={orientation === "white" ? timeBlack : timeWhite}
+    isActive={game.turn() === (orientation === "white" ? "b" : "w")}
+    isTop={true}
+  />
+</div>
+
+
               {/* Chess board */}
               <ChessBoard
                 position={game.fen()}
@@ -175,29 +168,44 @@ const GameRoom = () => {
                 allowMoves={true}
                 className="aspect-square"
               />
-              
-              {/* Bottom player info */}
-              <PlayerInfo
-                username={orientation === "white" ? whitePlayer.username : blackPlayer.username}
-                rating={orientation === "white" ? whitePlayer.rating : blackPlayer.rating}
-                timeLeft={orientation === "white" ? timeWhite : timeBlack}
-                isActive={game.turn() === (orientation === "white" ? "w" : "b")}
-              />
+
+              {/* Mobile player info (Bottom) */}
+<div className="lg:hidden w-full mt-2">
+  <PlayerInfo
+    username={orientation === "white" ? whitePlayer.username : blackPlayer.username}
+    rating={orientation === "white" ? whitePlayer.rating : blackPlayer.rating}
+    timeLeft={orientation === "white" ? timeWhite : timeBlack}
+    isActive={game.turn() === (orientation === "white" ? "w" : "b")}
+  />
+</div>
+
+
             </div>
           </div>
         </div>
-        
+
         {/* Right sidebar */}
-        <div className="space-y-4">
+        <div className="relative flex flex-col justify-center space-y-4 h-full">
+          <div className="absolute w-full top-4 hidden lg:block">
+          <PlayerInfo
+            username={orientation === "white" ? blackPlayer.username : whitePlayer.username}
+            rating={orientation === "white" ? blackPlayer.rating : whitePlayer.rating}
+            timeLeft={orientation === "white" ? timeBlack : timeWhite}
+            isActive={game.turn() === (orientation === "white" ? "b" : "w")}
+            isTop={true}
+          />
+          </div>
+
           {/* Game controls */}
           <Card className="p-4">
             <GameControls
-              onUndo={() => {}}
-              onReset={() => {}}
+              mode="online"
+              onUndo={() => { }}
+              onReset={() => { }}
               onResign={handleResign}
               onOfferDraw={handleOfferDraw}
               onFlipBoard={handleFlipBoard}
-              onExportPgn={() => {}}
+              onExportPgn={() => { }}
               onToggleChat={toggleChat}
               canUndo={false}
               gameInProgress={!game.isGameOver()}
@@ -205,30 +213,20 @@ const GameRoom = () => {
               orientation={orientation}
             />
           </Card>
-          
-          {/* Spectators */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Spectators
-              </h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Users className="w-4 h-4" />
-                <span>3</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {["Spectator1", "Spectator2", "Spectator3"].map((name, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                  <span className="text-sm text-gray-800 dark:text-gray-200">
-                    {name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-          
+
+          {/* Bottom player info */}
+          <div className="absolute w-full bottom-4 hidden lg:block">
+
+          <PlayerInfo
+            username={orientation === "white" ? whitePlayer.username : blackPlayer.username}
+            rating={orientation === "white" ? whitePlayer.rating : blackPlayer.rating}
+            timeLeft={orientation === "white" ? timeWhite : timeBlack}
+            isActive={game.turn() === (orientation === "white" ? "w" : "b")}
+          />
+          </div>
+
+
+
           {/* Chat */}
           {showChat && (
             <ChatBox
@@ -237,7 +235,7 @@ const GameRoom = () => {
               onClose={toggleChat}
             />
           )}
-          
+
           {!showChat && (
             <button
               className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-md w-full justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
